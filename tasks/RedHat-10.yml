@@ -1,0 +1,37 @@
+---
+
+- name: Update and Upgrade
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest
+
+- name: Install the latest version of Exim
+  ansible.builtin.dnf:
+    name:
+      - exim
+    state: latest
+
+- name: Enable service exim.service and ensure it is enabled not masked
+  ansible.builtin.systemd_service:
+    name: exim.service
+    state: started
+    enabled: true
+    masked: no
+
+- name: Permanently enable exim service, also enable it immediately if possible
+  ansible.posix.firewalld:
+    service: smtp
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Template exim.conf to /etc/exim/exim.conf
+  ansible.builtin.template:
+    src: templates/etc/exim/exim.conf
+    dest: /etc/exim/exim.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart exim
+
+...
